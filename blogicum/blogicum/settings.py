@@ -13,8 +13,6 @@ SECRET_KEY = 'django-insecure-!uo!vsc(d7#=ih2$ic-r4hk-+9=a!sah3knxn00=w9!2c@&t*e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-
-
 INSTALLED_APPS = [
     'pages.apps.PagesConfig',
     'django.contrib.admin',
