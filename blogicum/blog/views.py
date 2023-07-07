@@ -12,7 +12,7 @@ from django.forms import Form
 from blog.services import (
     queryset_annotate,
     get_posts,
-    get_paginator,
+    get_paginator
 )
 from blog.forms import CommentForm, UserForm
 from blog.forms import PostForm
@@ -86,6 +86,13 @@ class IndexView(PostMixin, ListView):
         return context
 
 
+def get_post_pk_comments(pk: int) -> QuerySet[Comment]:
+    return (Comment.objects
+                   .get_queryset()
+                   .filter(post_id=pk)
+                   .order_by('created_at'))
+
+
 class PostDetailView(LoginRequiredMixin, DispatchNeededMixin, DetailView):
     model = Post
     template_name = 'blog/detail.html'
@@ -94,9 +101,7 @@ class PostDetailView(LoginRequiredMixin, DispatchNeededMixin, DetailView):
     def get_context_data(self, **kwargs) -> dict[str, any]:
         context = super().get_context_data(**kwargs)
         context['form'] = CommentForm()
-        context['comments'] = Comment.objects.get_queryset().filter(
-            post_id=self.kwargs['pk']).order_by('created_at')
-
+        context['comments'] = get_post_pk_comments(self.kwargs['pk'])
         return context
 
 
@@ -132,8 +137,6 @@ class ProfileView(View):
 
     def get(self, request: HttpRequest, username: str) -> HttpResponse:
         profile = get_object_or_404(User, username=username)
-
-        profile = Post.objects.filter(author=profile)
         posts = queryset_annotate(Post.objects.filter(author=profile))
         context = {
             'profile': profile,
@@ -172,7 +175,6 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
-
     model = Post
     form_class = PostForm
     template_name = 'blog/create.html'
