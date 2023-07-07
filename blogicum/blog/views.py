@@ -1,12 +1,16 @@
-from django.views.generic import CreateView, DeleteView, UpdateView
-from django.views.generic import DetailView, ListView, View
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    UpdateView,
+    DetailView,
+    ListView,
+    View)
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.db.models import QuerySet
-from django.http import HttpResponse, HttpRequest
-from django.http import Http404
+from django.http import HttpResponse, HttpRequest, Http404
 from django.forms import Form
 
 from blog.services import (
@@ -14,11 +18,9 @@ from blog.services import (
     get_posts,
     get_paginator
 )
-from blog.forms import CommentForm, UserForm
-from blog.forms import PostForm
+from blog.forms import CommentForm, UserForm, PostForm
 from blog.models import Comment, Post, Category
-from blog.mixins import DispatchNeededMixin, CommentMixin
-from blog.mixins import PostMixin
+from blog.mixins import DispatchNeededMixin, CommentMixin, PostMixin
 
 
 AMOUNT_OBJ_ON_ONE_PAGE = 10
