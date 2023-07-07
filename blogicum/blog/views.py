@@ -9,13 +9,16 @@ from django.http import HttpResponse, HttpRequest
 from django.http import Http404
 from django.forms import Form
 
-from blog.services import queryset_annotate, get_comments, get_posts_author
-from blog.services import get_posts, get_paginator, get_post_pk_comments
+from blog.services import (
+    queryset_annotate,
+    get_posts,
+    get_paginator,
+)
 from blog.forms import CommentForm, UserForm
 from blog.forms import PostForm
 from blog.models import Comment, Post, Category
 from blog.mixins import DispatchNeededMixin, CommentMixin
-from blog.mixins import PostMixin, PostModelMixin
+from blog.mixins import PostMixin
 
 
 AMOUNT_OBJ_ON_ONE_PAGE = 10
@@ -91,7 +94,9 @@ class PostDetailView(LoginRequiredMixin, DispatchNeededMixin, DetailView):
     def get_context_data(self, **kwargs) -> dict[str, any]:
         context = super().get_context_data(**kwargs)
         context['form'] = CommentForm()
-        context['comments'] = get_post_pk_comments(self.kwargs['pk'])
+        context['comments'] = Comment.objects.get_queryset().filter(
+            post_id=self.kwargs['pk']).order_by('created_at')
+
         return context
 
 
@@ -127,7 +132,9 @@ class ProfileView(View):
 
     def get(self, request: HttpRequest, username: str) -> HttpResponse:
         profile = get_object_or_404(User, username=username)
-        posts = queryset_annotate(get_posts_author(profile))
+
+        profile = Post.objects.filter(author=profile)
+        posts = queryset_annotate(Post.objects.filter(author=profile))
         context = {
             'profile': profile,
             'page_obj': get_paginator(
@@ -135,7 +142,7 @@ class ProfileView(View):
                 page_number=self.request.GET.get('page'),
                 posts_on_page=AMOUNT_OBJ_ON_ONE_PAGE,
             ),
-            'comments': get_comments(profile),
+            'comments': Comment.objects.filter(author=profile),
         }
         return render(request, self.template_name, context)
 
@@ -164,7 +171,11 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
                             kwargs={'pk': self.object.id})
 
 
-class PostCreateView(LoginRequiredMixin, PostModelMixin, CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
+
+    model = Post
+    form_class = PostForm
+    template_name = 'blog/create.html'
 
     def get_success_url(self) -> str:
         username = self.request.user.username

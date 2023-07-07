@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.http import Http404
 
-from blog.forms import PostForm, CommentForm
+from blog.forms import CommentForm
 from blog.models import Post, Comment
 
 
@@ -33,7 +33,7 @@ def dispatch_comment(self, request: HttpRequest, *args, **kwargs):
 
 def dispatch_post_detail(self, request: HttpRequest, *args, **kwargs):
     instance = get_object_or_404(self.model, id=self.kwargs['pk'])
-    if instance.is_published is False and request.user != instance.author:
+    if not instance.is_published and request.user != instance.author:
         raise Http404
 
 
@@ -52,12 +52,6 @@ def dispatch_user_edit(self, request: HttpRequest, *args, **kwargs):
 class PostMixin:
     context_object_name = 'page_obj'
     model = Post
-
-
-class PostModelMixin:
-    model = Post
-    form_class = PostForm
-    template_name = 'blog/create.html'
 
 
 class CommentMixin:
