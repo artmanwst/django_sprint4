@@ -1,8 +1,7 @@
 from django.core.exceptions import PermissionDenied
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
-from django.http import Http404
 
 from blog.forms import CommentForm
 from blog.models import Post, Comment
